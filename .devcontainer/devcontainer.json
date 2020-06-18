@@ -39,7 +39,7 @@
     "go.formatTool": "goimports",
   },
   "extensions": [
-    "ms-vscode.go",
+    "golang.go",
     "redhat.vscode-yaml",
     "octref.vetur",
     "esbenp.prettier-vscode",
