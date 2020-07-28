@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/vscode/devcontainers/base:ubuntu-18.04
+FROM mcr.microsoft.com/vscode/devcontainers/base:ubuntu-20.04
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
@@ -7,20 +7,24 @@ ENV DEBIAN_FRONTEND=noninteractive
 ARG NODE_VERSION=12
 
 # Go version
-ENV GOLANG_VERSION 1.14.4
+ENV GOLANG_VERSION 1.14.6
 ENV GOLANG_DOWNLOAD_URL https://golang.org/dl/go$GOLANG_VERSION.linux-amd64.tar.gz
-ENV GOLANG_DOWNLOAD_SHA256 aed845e4185a0b2a3c3d5e1d0a35491702c55889192bb9c30e67a3de6849c067
+ENV GOLANG_DOWNLOAD_SHA256 5c566ddc2e0bcfc25c26a5dc44a440fcc0177f7350c1f01952b34d5989a0d287
 
 ARG USERNAME=vscode
 ARG DOCKER_GID=994
 
 # Docker Compose version
-ARG COMPOSE_VERSION=1.26.0
+ARG COMPOSE_VERSION=1.26.2
 
-ENV ETCD_VER=v3.4.9
+ENV ETCD_VER=v3.4.10
+
 ENV GITHUB_URL=https://github.com/etcd-io/etcd/releases/download
 
 ENV GOPATH /go
+
+ENV MAGE_VERSION=1.10.0
+ENV GOTESTSUM_VERSION=0.5.2
 
 RUN apt-get update \
   && apt-get -y install curl telnet jq git build-essential \
@@ -71,6 +75,10 @@ RUN apt-get update \
   && mv /tmp/gotools/gocode-gomod /usr/local/bin/ \
   && cd ~ \
   && rm -rf /tmp/gotools \
+  # Install mage
+  && curl -sSL "https://github.com/magefile/mage/releases/download/v${MAGE_VERSION}/mage_${MAGE_VERSION}_Linux-64bit.tar.gz" | sudo tar -xz -C /usr/local/bin mage \
+  # Install gotestsum
+  && curl -sSL "https://github.com/gotestyourself/gotestsum/releases/download/v${GOTESTSUM_VERSION}/gotestsum_${GOTESTSUM_VERSION}_linux_amd64.tar.gz" | sudo tar -xz -C /usr/local/bin gotestsum \
   # Install golangci-lint
   && curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b /usr/local/bin 2>&1 \
   # Setup Go directories
@@ -83,7 +91,7 @@ RUN apt-get update \
   && apt-get update \
   && apt-get install -y docker-ce-cli \
   # Install docker compose
-  && curl -sSL "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose \
+  && curl -sSL "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-Linux-x86_64" -o /usr/local/bin/docker-compose \
   && chmod +x /usr/local/bin/docker-compose \
   # Create a docker group and add user to docker group
   && groupadd --gid $DOCKER_GID docker \
@@ -109,7 +117,6 @@ ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 
 # Update this to "on" or "off" as appropriate
 ENV GO111MODULE=auto
-
 
 # switch back to dialog for any ad-hoc use of apt-get
 ENV DEBIAN_FRONTEND=dialog
